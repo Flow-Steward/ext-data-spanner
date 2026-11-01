@@ -1,0 +1,149 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Google MCP Toolbox Dataset Connector Configuration
+type: object
+additionalProperties: false
+required:
+- prebuilt
+properties:
+  prebuilt:
+    type: string
+    enum:
+    - spanner
+    - spanner-postgres
+    description: Google MCP Toolbox prebuilt connector to invoke.
+  database:
+    type: string
+    description: Database name for the selected external source.
+  host:
+    type: string
+    description: Database host for networked Toolbox prebuilts.
+  port:
+    type: string
+    description: Database port for networked Toolbox prebuilts.
+  user:
+    type: string
+    description: Database user for networked Toolbox prebuilts.
+  query_params:
+    type: string
+    description: Optional PostgreSQL query params passed to Toolbox.
+  account:
+    type: string
+    description: Account identifier for account-scoped sources such as Snowflake.
+  project:
+    type: string
+    description: Cloud project for managed Google Cloud sources.
+  region:
+    type: string
+    description: Cloud region for managed Google Cloud sources.
+  cluster:
+    type: string
+    description: Cluster identifier for managed database sources.
+  instance:
+    type: string
+    description: Instance identifier for managed database sources.
+  ip_type:
+    type: string
+    description: Public or private IP mode for managed database sources.
+  protocol:
+    type: string
+    description: Source protocol, such as native or http for ClickHouse.
+  schema:
+    type: string
+    description: Default database schema.
+  warehouse:
+    type: string
+    description: Compute warehouse for Snowflake.
+  role:
+    type: string
+    description: Database role for Snowflake.
+  dialect:
+    type: string
+    description: SQL dialect for Spanner.
+  env:
+    type: object
+    additionalProperties:
+      type: string
+    description: Optional explicit Toolbox environment variables.
+allOf:
+- if:
+    properties:
+      prebuilt:
+        enum:
+        - alloydb-omni
+        - clickhouse
+        - mariadb
+        - mssql
+        - mysql
+        - oceanbase
+        - postgres
+        - singlestore
+    required:
+    - prebuilt
+  then:
+    required:
+    - host
+    - database
+    - user
+- if:
+    properties:
+      prebuilt:
+        enum:
+        - cloud-sql-mssql
+        - cloud-sql-mysql
+        - cloud-sql-postgres
+    required:
+    - prebuilt
+  then:
+    required:
+    - project
+    - region
+    - instance
+    - database
+    - user
+- if:
+    properties:
+      prebuilt:
+        const: alloydb-postgres
+    required:
+    - prebuilt
+  then:
+    required:
+    - project
+    - region
+    - cluster
+    - instance
+    - database
+    - user
+- if:
+    properties:
+      prebuilt:
+        const: snowflake
+    required:
+    - prebuilt
+  then:
+    required:
+    - account
+    - user
+    - database
+- if:
+    properties:
+      prebuilt:
+        enum:
+        - spanner
+        - spanner-postgres
+    required:
+    - prebuilt
+  then:
+    required:
+    - project
+    - instance
+    - database
+- if:
+    properties:
+      prebuilt:
+        const: sqlite
+    required:
+    - prebuilt
+  then:
+    required:
+    - database

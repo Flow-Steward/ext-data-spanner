@@ -1,0 +1,23 @@
+{
+  "binaries": {
+    "linux-amd64": {
+      "path": "bin/linux-amd64/toolbox",
+      "sha256": "5daca18fe7dc4c27867c168cfbd14598c9a5996bda794b09345147c10450b0c5",
+      "size": 40624254
+    },
+    "linux-arm64": {
+      "path": "bin/linux-arm64/toolbox",
+      "sha256": "42478c8dd48e6066fa0b1bee2563eac8ffd2e890f3cc6307d78b9b92e08fb64f",
+      "size": 38338686
+    }
+  },
+  "go_image": "golang:1.26.2-bookworm@sha256:47ce5636e9936b2c5cbf708925578ef386b4f8872aec74a67bd13a627d242b19",
+  "patch_sha256": "f3148416af3e8c9716d110334a5a916d6144dad9389f4704eb9212193136828e",
+  "registered_prebuilts": [
+    "spanner",
+    "spanner-postgres"
+  ],
+  "source": "https://github.com/googleapis/mcp-toolbox",
+  "upstream_commit": "b0010060a939455d91e4f8ba62dc3e72b1892469",
+  "upstream_tag": "v1.3.0"
+}

@@ -1,0 +1,539 @@
+manifest_version: 2
+lifecycle:
+  data_schema_version: 1
+  data_migrations: []
+extension_id: flowsteward.data-connector-mcp-toolbox-spanner
+kind: tool_provider
+version: 1.2.0
+release_stage: active
+display_name: Spanner (Google MCP Toolbox)
+description: Read and write Google Cloud Spanner with GoogleSQL or the PostgreSQL
+  dialect from workflows through Google MCP Toolbox.
+vendor:
+  name: Flow Steward
+  support_url: https://github.com/Flow-Steward/ext-data-spanner/issues
+  website_url: https://github.com/Flow-Steward/ext-data-spanner
+listing:
+  category: data
+  tags:
+  - database
+  - dataset
+  - google-mcp-toolbox
+  - spanner
+  - spanner-postgres
+  summary: Read and write Google Cloud Spanner with GoogleSQL or the PostgreSQL dialect
+    from workflows through Google MCP Toolbox.
+  description: Connect workspace datasets to Google MCP Toolbox database prebuilts
+    through the Flow Steward extension runtime.
+package:
+  format: flow-steward-extension
+  license: Apache-2.0
+  includes_source: true
+billing_mode: free
+upgrade_notes: Standalone repository with native workflow writes. Existing extension
+  IDs are preserved.
+screenshots:
+- label: Overview
+  description: Declarative overview page for the reference dataset connector.
+  path: ui/components/overview.yaml
+features:
+- tool
+- dataset_connector
+- action
+- query
+required_scopes:
+- extension:invoke
+machine_auth:
+  service_account_key: svc_ext_data_connector_mcp_toolbox_spanner
+  required_scopes:
+  - extension:invoke
+account_scope:
+  scope_type: project
+  description: Toolbox dataset connector connections are project-scoped and resolved
+    through project connection config and secrets.
+external_effects:
+- operation_id: execute_write
+  effect_kind: database_write
+  channel: toolbox
+  idempotency: required
+  test_mode_behavior: suppress
+schemas:
+  config: schemas/config.schema.yaml
+  secrets: schemas/secrets.schema.yaml
+  subscriptions: schemas/subscriptions.schema.yaml
+entrypoint:
+  mode: subprocess
+  command:
+  - python3
+  - main.py
+health:
+  command:
+  - python3
+  - health.py
+  timeout_seconds: 5
+ui_manifest: ui/ui_manifest.yaml
+query_manifest: ui/queries/queries.yaml
+action_manifest: ui/actions/actions.yaml
+runtime:
+  contract_version: extension_host_v2
+  extension_contract_v2:
+    connection_types:
+    - connection_type_id: toolbox_sql_writer
+      display_name: Toolbox SQL writer
+      description: Project connection for parameterized database writes from workflows.
+      config_schema:
+        type: object
+        additionalProperties: false
+        required:
+        - prebuilt
+        - project
+        - instance
+        - database
+        properties:
+          prebuilt:
+            type: string
+            title: Database type
+            enum:
+            - spanner
+            - spanner-postgres
+          host:
+            type: string
+            title: Host
+            minLength: 1
+          port:
+            type: integer
+            title: Port
+            minimum: 1
+            maximum: 65535
+          database:
+            type: string
+            title: Database
+            minLength: 1
+          user:
+            type: string
+            title: User
+            minLength: 1
+          query_params:
+            type: string
+            title: Connection query parameters
+          project:
+            type: string
+            title: Cloud project
+            minLength: 1
+          region:
+            type: string
+            title: Cloud region
+            minLength: 1
+          cluster:
+            type: string
+            title: Cluster
+            minLength: 1
+          instance:
+            type: string
+            title: Instance
+            minLength: 1
+          ip_type:
+            type: string
+            title: IP type
+          account:
+            type: string
+            title: Account
+          schema:
+            type: string
+            title: Schema
+          warehouse:
+            type: string
+            title: Warehouse
+          role:
+            type: string
+            title: Role
+          protocol:
+            type: string
+            title: Protocol
+          dialect:
+            type: string
+            title: Dialect
+          secure:
+            type: boolean
+      secret_schema:
+        type: object
+        additionalProperties: false
+        properties:
+          password:
+            type: string
+            title: Password
+      capabilities:
+        write_queries: true
+      safety_profile:
+        stores_secret_values: false
+    dataset_connectors:
+    - connector_id: toolbox_database
+      connector_type_id: toolbox_database
+      database_kind: database
+      display_name: Google MCP Toolbox database source
+      description: Read-only schema introspection and saved-template execution through
+        Google MCP Toolbox database sources.
+      source_kind: database
+      source_extension_id: flowsteward.data-connector-mcp-toolbox-spanner
+      source_extension_name: Spanner (Google MCP Toolbox)
+      source_provider: Google MCP Toolbox
+      query_language: sql
+      access_mode: read_only
+      runtime_kind: local_extension
+      runtime_adapter_ref: extensions/flowsteward_data_connector_mcp_toolbox_spanner/main.py
+      connector_catalog:
+      - source_kind: spanner
+        connector_type_id: toolbox_spanner
+        display_name: Spanner (GoogleSQL)
+        query_language: googlesql
+        preset_config:
+          prebuilt: spanner
+      - source_kind: spanner-postgres
+        connector_type_id: toolbox_spanner_postgres
+        display_name: Spanner (PostgreSQL)
+        query_language: sql
+        preset_config:
+          prebuilt: spanner-postgres
+      connection_schema:
+        type: object
+        additionalProperties: false
+        required:
+        - prebuilt
+        properties:
+          prebuilt:
+            type: string
+            title: Toolbox source
+            enum:
+            - spanner
+            - spanner-postgres
+            description: Google MCP Toolbox source selected by the connector type.
+          database:
+            type: string
+            title: Database or dataset
+            description: Database, dataset, namespace, or local file value used by
+              this Toolbox source when applicable.
+          host:
+            type: string
+            title: Host
+            description: Host for networked Toolbox sources when applicable.
+          port:
+            type: integer
+            minimum: 1
+            maximum: 65535
+            title: Port
+            description: Port for networked Toolbox sources when applicable.
+          user:
+            type: string
+            title: User
+            description: User name for sources that authenticate with a database user.
+          query_params:
+            type: string
+            title: Query params
+            description: Optional connection query params passed to Toolbox when supported
+              by the source.
+          account:
+            type: string
+            title: Account
+          project:
+            type: string
+            title: Cloud project
+          region:
+            type: string
+            title: Cloud region
+          cluster:
+            type: string
+            title: Cluster
+          instance:
+            type: string
+            title: Instance
+          ip_type:
+            type: string
+            title: IP type
+          protocol:
+            type: string
+            title: Protocol
+          schema:
+            type: string
+            title: Schema
+          warehouse:
+            type: string
+            title: Warehouse
+          role:
+            type: string
+            title: Role
+          dialect:
+            type: string
+            title: SQL dialect
+          env:
+            type: object
+            title: Public Toolbox env vars
+            additionalProperties:
+              type: string
+        allOf:
+        - if:
+            properties:
+              prebuilt:
+                enum:
+                - alloydb-omni
+                - clickhouse
+                - mariadb
+                - mssql
+                - mysql
+                - oceanbase
+                - postgres
+                - singlestore
+            required:
+            - prebuilt
+          then:
+            required:
+            - host
+            - database
+            - user
+        - if:
+            properties:
+              prebuilt:
+                enum:
+                - cloud-sql-mssql
+                - cloud-sql-mysql
+                - cloud-sql-postgres
+            required:
+            - prebuilt
+          then:
+            required:
+            - project
+            - region
+            - instance
+            - database
+            - user
+        - if:
+            properties:
+              prebuilt:
+                const: alloydb-postgres
+            required:
+            - prebuilt
+          then:
+            required:
+            - project
+            - region
+            - cluster
+            - instance
+            - database
+            - user
+        - if:
+            properties:
+              prebuilt:
+                const: snowflake
+            required:
+            - prebuilt
+          then:
+            required:
+            - account
+            - user
+            - database
+        - if:
+            properties:
+              prebuilt:
+                enum:
+                - spanner
+                - spanner-postgres
+            required:
+            - prebuilt
+          then:
+            required:
+            - project
+            - instance
+            - database
+        - if:
+            properties:
+              prebuilt:
+                const: sqlite
+            required:
+            - prebuilt
+          then:
+            required:
+            - database
+          description: Optional explicit Toolbox environment variables.
+      secret_schema:
+        type: object
+        additionalProperties: false
+        properties:
+          password:
+            type: string
+            title: Password
+            description: Database password for networked Toolbox prebuilts.
+      capabilities:
+        read_only: true
+        test_connection: true
+        schema_introspection: true
+        validate_query: true
+        preview_query: true
+        execute_template: true
+        infer_output_schema: true
+        write_queries: false
+        row_preview: true
+      safety_profile:
+        access_mode: read_only
+        indexes_rows: false
+        executes_write_queries: false
+        requires_saved_template: true
+      preview_support: true
+      schema_refresh_support: true
+    operation_manifest:
+    - operation_id: execute_write
+      display_name: Execute database write
+      workflow_visible: true
+      operation_kind: action
+      category: database
+      description: Execute one parameterized INSERT, UPDATE or DELETE using the selected
+        project connection. INSERT supports database-specific upsert syntax.
+      connection_type_ids:
+      - toolbox_sql_writer
+      required_scopes:
+      - extension:invoke
+      inputs:
+      - name: connection_ref
+        value_type: connection_ref
+        required: true
+      - name: sql
+        value_type: text
+        required: true
+      - name: params
+        value_type: object
+        required: false
+      - name: param_schema
+        value_type: object
+        required: false
+      outputs:
+      - name: status
+        value_type: text
+      - name: rows
+        value_type: array
+      - name: returned_row_count
+        value_type: integer
+      result_fields:
+      - result.status
+      - result.rows
+      - result.returned_row_count
+      error_codes:
+      - invalid_payload
+      - write_outcome_unknown
+    - operation_id: test_connection
+      workflow_visible: false
+      operation_kind: action
+      description: Validate that Google MCP Toolbox can list tables for the configured
+        prebuilt database.
+      required_scopes:
+      - extension:invoke
+      result_fields:
+      - result.status
+      - result.connector_id
+      - result.metadata.toolbox_prebuilt
+      error_codes:
+      - invalid_config
+      - not_found
+      - permission_denied
+      - connector_runtime_failed
+      - unknown_action
+    - operation_id: introspect_schema
+      workflow_visible: false
+      operation_kind: action
+      description: Return a normalized typed schema snapshot from Google MCP Toolbox
+        list_tables output.
+      required_scopes:
+      - extension:invoke
+      result_fields:
+      - result.schema_snapshot.schema_version
+      - result.schema_snapshot.resources[].resource_id
+      - result.schema_snapshot.resources[].columns[].name
+      - result.schema_snapshot.resources[].indexes[].columns[]
+      - result.resource_count
+      error_codes:
+      - invalid_config
+      - not_found
+      - permission_denied
+      - connector_runtime_failed
+      - unknown_action
+    - operation_id: validate_query
+      workflow_visible: false
+      operation_kind: action
+      description: Validate a saved read-only query template against dataset resource
+        scope.
+      required_scopes:
+      - extension:invoke
+      result_fields:
+      - result.valid
+      - result.read_only
+      - result.referenced_resources[]
+      error_codes:
+      - invalid_config
+      - connector_runtime_failed
+      - unknown_action
+    - operation_id: preview_query
+      workflow_visible: false
+      operation_kind: action
+      description: Execute a bounded read-only preview for a validated query template.
+      required_scopes:
+      - extension:invoke
+      result_fields:
+      - result.rows[]
+      - result.row_count
+      - result.output_schema
+      error_codes:
+      - invalid_config
+      - connector_runtime_failed
+      - unknown_action
+    - operation_id: execute_template
+      workflow_visible: false
+      operation_kind: action
+      description: Execute a saved read-only query template with named parameters
+        and runtime row limits.
+      required_scopes:
+      - extension:invoke
+      result_fields:
+      - result.rows[]
+      - result.row_count
+      - result.output_schema
+      - result.truncated
+      error_codes:
+      - invalid_config
+      - connector_runtime_failed
+      - unknown_action
+    - operation_id: infer_output_schema
+      workflow_visible: false
+      operation_kind: action
+      description: Infer output schema from a bounded read-only preview of the query
+        template.
+      required_scopes:
+      - extension:invoke
+      result_fields:
+      - result.output_schema
+      error_codes:
+      - invalid_config
+      - connector_runtime_failed
+      - unknown_action
+    resource_query_manifest:
+    - query_id: runtime_health
+      cursor_mode: none
+      description: Return extension runtime health.
+      required_scopes:
+      - extension:invoke
+      result_fields:
+      - result.status
+      - result.extension_id
+      error_codes:
+      - unknown_query
+      - connector_runtime_failed
+    - query_id: supported_connectors
+      cursor_mode: none
+      description: Return the supported connector catalog for this extension.
+      required_scopes:
+      - extension:invoke
+      result_fields:
+      - result.connectors[].connector_type_id
+      - result.connectors[].display_name
+      - result.connectors[].database_kind
+      - result.connectors[].source_provider
+      - result.connectors[].access_mode
+      error_codes:
+      - unknown_query
+      - connector_runtime_failed

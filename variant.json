@@ -1,0 +1,7 @@
+{
+  "prebuilts": [
+    "spanner",
+    "spanner-postgres"
+  ],
+  "display_name": "Spanner (Google MCP Toolbox)"
+}

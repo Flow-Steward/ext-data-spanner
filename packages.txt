@@ -1,0 +1,5 @@
+github.com/googleapis/mcp-toolbox/internal/sources/spanner
+github.com/googleapis/mcp-toolbox/internal/tools/spanner/spannerexecutesql
+github.com/googleapis/mcp-toolbox/internal/tools/spanner/spannerlistgraphs
+github.com/googleapis/mcp-toolbox/internal/tools/spanner/spannerlisttables
+github.com/googleapis/mcp-toolbox/internal/tools/spanner/spannersql
