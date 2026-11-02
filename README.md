@@ -1,6 +1,6 @@
 # Spanner for Flow Steward
 
-Connect **Spanner** datasets and run parameterized workflow writes. This repository contains one installable Spanner extension, version **1.3.0**, with separate Linux AMD64 and ARM64 archives. No other database can be selected or installed from this package.
+Connect **Spanner** datasets and run parameterized workflow writes. This repository contains one installable Spanner extension, version **1.3.1**, with separate Linux AMD64 and ARM64 archives. No other database can be selected or installed from this package.
 
 ## Set up a Spanner connection
 
