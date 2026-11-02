@@ -3,5 +3,5 @@
     "spanner",
     "spanner-postgres"
   ],
-  "display_name": "Spanner (Google MCP Toolbox)"
+  "display_name": "Spanner"
 }

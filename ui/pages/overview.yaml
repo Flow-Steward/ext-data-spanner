@@ -1,5 +1,5 @@
 page_id: overview
 title: Overview
-description: Reference extension summary and contract notes.
+description: Spanner extension summary and contract notes.
 components:
-  - ref: ../components/overview.yaml
+- ref: ../components/overview.yaml

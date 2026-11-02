@@ -74,7 +74,7 @@ def _variant() -> dict[str, Any]:
 
 _VARIANT = _variant()
 TOOLBOX_DATASET_PREBUILTS = frozenset(_VARIANT.get("prebuilts") or TOOLBOX_SOURCE_CATALOG)
-EXTENSION_DISPLAY_NAME = str(_VARIANT.get("display_name") or "Toolbox Dataset Connector")
+EXTENSION_DISPLAY_NAME = str(_VARIANT.get("display_name") or "Spanner")
 # Toolbox environment variable -> connection field name. The "password" values
 # name a field; they are not secrets.
 TOOLBOX_ENV_FIELDS: dict[str, dict[str, str]] = {
@@ -215,7 +215,7 @@ def _supported_connector_rows() -> list[dict[str, Any]]:
             "source_kind": prebuilt,
             "source_extension_id": EXTENSION_ID,
             "source_extension_name": EXTENSION_DISPLAY_NAME,
-            "source_provider": "Google MCP Toolbox",
+            "source_provider": "Spanner",
             "query_language": metadata["query_language"],
             "access_mode": "read_only",
             "supported_prebuilts": prebuilt,
@@ -429,7 +429,7 @@ def _invoke_toolbox(
                 "params": {
                     "protocolVersion": "2025-06-18",
                     "capabilities": {},
-                    "clientInfo": {"name": EXTENSION_ID, "version": "1.2.0"},
+                    "clientInfo": {"name": EXTENSION_ID, "version": "1.3.0"},
                 },
             },
         )

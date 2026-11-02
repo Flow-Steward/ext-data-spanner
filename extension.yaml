@@ -4,11 +4,10 @@ lifecycle:
   data_migrations: []
 extension_id: flowsteward.data-connector-mcp-toolbox-spanner
 kind: tool_provider
-version: 1.2.0
+version: 1.3.0
 release_stage: active
-display_name: Spanner (Google MCP Toolbox)
-description: Read and write Google Cloud Spanner with GoogleSQL or the PostgreSQL
-  dialect from workflows through Google MCP Toolbox.
+display_name: Spanner
+description: Read Spanner datasets and run parameterized workflow writes.
 vendor:
   name: Flow Steward
   support_url: https://github.com/Flow-Steward/ext-data-spanner/issues
@@ -18,23 +17,21 @@ listing:
   tags:
   - database
   - dataset
-  - google-mcp-toolbox
   - spanner
   - spanner-postgres
-  summary: Read and write Google Cloud Spanner with GoogleSQL or the PostgreSQL dialect
-    from workflows through Google MCP Toolbox.
-  description: Connect workspace datasets to Google MCP Toolbox database prebuilts
-    through the Flow Steward extension runtime.
+  summary: Spanner dataset reads and workflow writes.
+  description: Connect project-scoped Spanner databases for saved queries, schema introspection and
+    parameterized workflow writes.
 package:
   format: flow-steward-extension
   license: Apache-2.0
   includes_source: true
 billing_mode: free
-upgrade_notes: Standalone repository with native workflow writes. Existing extension
+upgrade_notes: Database-specific setup and friendly names. Stable extension, connection and connector
   IDs are preserved.
 screenshots:
 - label: Overview
-  description: Declarative overview page for the reference dataset connector.
+  description: Spanner connection and query overview.
   path: ui/components/overview.yaml
 features:
 - tool
@@ -49,8 +46,7 @@ machine_auth:
   - extension:invoke
 account_scope:
   scope_type: project
-  description: Toolbox dataset connector connections are project-scoped and resolved
-    through project connection config and secrets.
+  description: Spanner connections are project-scoped and use the configured database settings and credentials.
 external_effects:
 - operation_id: execute_write
   effect_kind: database_write
@@ -79,10 +75,11 @@ runtime:
   extension_contract_v2:
     connection_types:
     - connection_type_id: toolbox_sql_writer
-      display_name: Toolbox SQL writer
-      description: Project connection for parameterized database writes from workflows.
+      display_name: Spanner connection
+      description: Project connection for parameterized Spanner workflow writes.
       config_schema:
         type: object
+        title: Spanner connection settings
         additionalProperties: false
         required:
         - prebuilt
@@ -92,76 +89,40 @@ runtime:
         properties:
           prebuilt:
             type: string
-            title: Database type
-            enum:
+            title: SQL interface
+            enum: &id001
             - spanner
             - spanner-postgres
-          host:
+            default: spanner
+            description: Spanner SQL interface; this extension cannot select another database.
+          project:
             type: string
-            title: Host
+            title: Google Cloud project
             minLength: 1
-          port:
-            type: integer
-            title: Port
-            minimum: 1
-            maximum: 65535
+            description: Spanner google cloud project.
+          instance:
+            type: string
+            title: Spanner instance
+            minLength: 1
+            description: Spanner spanner instance.
           database:
             type: string
             title: Database
             minLength: 1
-          user:
-            type: string
-            title: User
-            minLength: 1
-          query_params:
-            type: string
-            title: Connection query parameters
-          project:
-            type: string
-            title: Cloud project
-            minLength: 1
-          region:
-            type: string
-            title: Cloud region
-            minLength: 1
-          cluster:
-            type: string
-            title: Cluster
-            minLength: 1
-          instance:
-            type: string
-            title: Instance
-            minLength: 1
-          ip_type:
-            type: string
-            title: IP type
-          account:
-            type: string
-            title: Account
-          schema:
-            type: string
-            title: Schema
-          warehouse:
-            type: string
-            title: Warehouse
-          role:
-            type: string
-            title: Role
-          protocol:
-            type: string
-            title: Protocol
+            description: Spanner database.
           dialect:
             type: string
-            title: Dialect
-          secure:
-            type: boolean
+            title: GoogleSQL profile dialect
+            description: Dialect for the spanner profile. The spanner-postgres profile always uses PostgreSQL.
+            enum:
+            - googlesql
+            - postgresql
+            default: googlesql
       secret_schema:
         type: object
+        title: Spanner credentials
         additionalProperties: false
-        properties:
-          password:
-            type: string
-            title: Password
+        properties: {}
       capabilities:
         write_queries: true
       safety_profile:
@@ -170,13 +131,12 @@ runtime:
     - connector_id: toolbox_database
       connector_type_id: toolbox_database
       database_kind: database
-      display_name: Google MCP Toolbox database source
-      description: Read-only schema introspection and saved-template execution through
-        Google MCP Toolbox database sources.
+      display_name: Spanner database
+      description: Read-only Spanner schema introspection and saved query execution.
       source_kind: database
       source_extension_id: flowsteward.data-connector-mcp-toolbox-spanner
-      source_extension_name: Spanner (Google MCP Toolbox)
-      source_provider: Google MCP Toolbox
+      source_extension_name: Spanner
+      source_provider: Spanner
       query_language: sql
       access_mode: read_only
       runtime_kind: local_extension
@@ -196,171 +156,80 @@ runtime:
           prebuilt: spanner-postgres
       connection_schema:
         type: object
+        title: Spanner connection settings
         additionalProperties: false
         required:
         - prebuilt
+        - project
+        - instance
+        - database
         properties:
           prebuilt:
             type: string
-            title: Toolbox source
-            enum:
-            - spanner
-            - spanner-postgres
-            description: Google MCP Toolbox source selected by the connector type.
-          database:
-            type: string
-            title: Database or dataset
-            description: Database, dataset, namespace, or local file value used by
-              this Toolbox source when applicable.
-          host:
-            type: string
-            title: Host
-            description: Host for networked Toolbox sources when applicable.
-          port:
-            type: integer
-            minimum: 1
-            maximum: 65535
-            title: Port
-            description: Port for networked Toolbox sources when applicable.
-          user:
-            type: string
-            title: User
-            description: User name for sources that authenticate with a database user.
-          query_params:
-            type: string
-            title: Query params
-            description: Optional connection query params passed to Toolbox when supported
-              by the source.
-          account:
-            type: string
-            title: Account
+            title: SQL interface
+            enum: *id001
+            default: spanner
+            description: Spanner SQL interface; this extension cannot select another database.
           project:
             type: string
-            title: Cloud project
-          region:
-            type: string
-            title: Cloud region
-          cluster:
-            type: string
-            title: Cluster
+            title: Google Cloud project
+            description: Spanner google cloud project.
           instance:
             type: string
-            title: Instance
-          ip_type:
+            title: Spanner instance
+            description: Spanner spanner instance.
+          database:
             type: string
-            title: IP type
-          protocol:
-            type: string
-            title: Protocol
-          schema:
-            type: string
-            title: Schema
-          warehouse:
-            type: string
-            title: Warehouse
-          role:
-            type: string
-            title: Role
+            title: Database
+            description: Spanner database.
           dialect:
             type: string
-            title: SQL dialect
+            title: GoogleSQL profile dialect
+            description: Dialect for the spanner profile. The spanner-postgres profile always uses PostgreSQL.
+            enum:
+            - googlesql
+            - postgresql
+            default: googlesql
           env:
             type: object
-            title: Public Toolbox env vars
-            additionalProperties:
-              type: string
-        allOf:
-        - if:
+            title: Advanced Spanner environment
+            additionalProperties: false
             properties:
-              prebuilt:
-                enum:
-                - alloydb-omni
-                - clickhouse
-                - mariadb
-                - mssql
-                - mysql
-                - oceanbase
-                - postgres
-                - singlestore
-            required:
-            - prebuilt
-          then:
-            required:
-            - host
-            - database
-            - user
-        - if:
-            properties:
-              prebuilt:
-                enum:
-                - cloud-sql-mssql
-                - cloud-sql-mysql
-                - cloud-sql-postgres
-            required:
-            - prebuilt
-          then:
-            required:
-            - project
-            - region
-            - instance
-            - database
-            - user
-        - if:
-            properties:
-              prebuilt:
-                const: alloydb-postgres
-            required:
-            - prebuilt
-          then:
-            required:
-            - project
-            - region
-            - cluster
-            - instance
-            - database
-            - user
-        - if:
-            properties:
-              prebuilt:
-                const: snowflake
-            required:
-            - prebuilt
-          then:
-            required:
-            - account
-            - user
-            - database
-        - if:
-            properties:
-              prebuilt:
-                enum:
-                - spanner
-                - spanner-postgres
-            required:
-            - prebuilt
-          then:
-            required:
-            - project
-            - instance
-            - database
-        - if:
-            properties:
-              prebuilt:
-                const: sqlite
-            required:
-            - prebuilt
-          then:
-            required:
-            - database
-          description: Optional explicit Toolbox environment variables.
+              SPANNER_PROJECT:
+                type: string
+              SPANNER_INSTANCE:
+                type: string
+              SPANNER_DATABASE:
+                type: string
+              SPANNER_DIALECT:
+                type: string
+              GOOGLE_CLOUD_PROJECT:
+                type: string
+              GOOGLE_CLOUD_QUOTA_PROJECT:
+                type: string
+              GOOGLE_CLOUD_UNIVERSE_DOMAIN:
+                type: string
+              GOOGLE_API_USE_MTLS_ENDPOINT:
+                type: string
+              GOOGLE_API_USE_CLIENT_CERTIFICATE:
+                type: string
+              SPANNER_EMULATOR_HOST:
+                type: string
+            description: Optional Spanner source environment overrides only. Credentials belong in secrets.
       secret_schema:
         type: object
+        title: Spanner credentials
         additionalProperties: false
         properties:
-          password:
-            type: string
-            title: Password
-            description: Database password for networked Toolbox prebuilts.
+          env:
+            type: object
+            title: Advanced Spanner secret environment
+            additionalProperties: false
+            properties:
+              GOOGLE_APPLICATION_CREDENTIALS:
+                type: string
+            description: Optional server-side Application Default Credentials file path. No JSON key
+              contents are accepted.
       capabilities:
         read_only: true
         test_connection: true
@@ -380,12 +249,11 @@ runtime:
       schema_refresh_support: true
     operation_manifest:
     - operation_id: execute_write
-      display_name: Execute database write
+      display_name: Execute Spanner write
       workflow_visible: true
       operation_kind: action
       category: database
-      description: Execute one parameterized INSERT, UPDATE or DELETE using the selected
-        project connection. INSERT supports database-specific upsert syntax.
+      description: Run one parameterized INSERT, UPDATE or DELETE on the selected Spanner project connection.
       connection_type_ids:
       - toolbox_sql_writer
       required_scopes:
@@ -420,8 +288,7 @@ runtime:
     - operation_id: test_connection
       workflow_visible: false
       operation_kind: action
-      description: Validate that Google MCP Toolbox can list tables for the configured
-        prebuilt database.
+      description: Validate that the configured Spanner database can list tables.
       required_scopes:
       - extension:invoke
       result_fields:
@@ -437,8 +304,7 @@ runtime:
     - operation_id: introspect_schema
       workflow_visible: false
       operation_kind: action
-      description: Return a normalized typed schema snapshot from Google MCP Toolbox
-        list_tables output.
+      description: Return a typed Spanner schema snapshot.
       required_scopes:
       - extension:invoke
       result_fields:
@@ -456,8 +322,7 @@ runtime:
     - operation_id: validate_query
       workflow_visible: false
       operation_kind: action
-      description: Validate a saved read-only query template against dataset resource
-        scope.
+      description: Validate a saved read-only query template against dataset resource scope.
       required_scopes:
       - extension:invoke
       result_fields:
@@ -485,8 +350,7 @@ runtime:
     - operation_id: execute_template
       workflow_visible: false
       operation_kind: action
-      description: Execute a saved read-only query template with named parameters
-        and runtime row limits.
+      description: Execute a saved read-only query template with named parameters and runtime row limits.
       required_scopes:
       - extension:invoke
       result_fields:
@@ -501,8 +365,7 @@ runtime:
     - operation_id: infer_output_schema
       workflow_visible: false
       operation_kind: action
-      description: Infer output schema from a bounded read-only preview of the query
-        template.
+      description: Infer output schema from a bounded read-only preview of the query template.
       required_scopes:
       - extension:invoke
       result_fields:

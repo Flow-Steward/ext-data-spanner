@@ -1,7 +1,8 @@
 component_id: toolbox_dataset_connector_overview
 type: markdown
-title: Google Cloud Spanner Connector
-body: Read Google Cloud Spanner datasets with schema introspection, saved SQL and
-  visual queries. Workflows can execute one parameterized INSERT, UPDATE or DELETE
-  through a project connection. Writes require a host effect claim and are suppressed
-  in test mode.
+title: Spanner setup
+body: Read Spanner datasets with schema introspection and saved SQL. Configure google cloud project,
+  spanner instance, database. Workflows can execute one parameterized INSERT, UPDATE or DELETE through
+  a Spanner project connection. Writes require a host effect claim and are suppressed in test mode.
+  Choose the GoogleSQL or PostgreSQL interface. Authentication uses server-side Application Default
+  Credentials.

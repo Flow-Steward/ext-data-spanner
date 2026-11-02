@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0
+
+- Show Spanner throughout setup, connections, dataset catalog and workflow actions.
+- Expose only supported Spanner settings and SQL interfaces; preserve relevant authentication and cloud settings.
+- Preserve stable extension/connection/action IDs, SQL/runtime guards, native binaries and provenance.
+- Keep the existing 1.2.0 release immutable; publish separate 1.3.0 target archives.
+
 ## 1.2.0
 
 - Publish spanner as its own repository and two Linux architecture archives, preserving the existing extension ID.

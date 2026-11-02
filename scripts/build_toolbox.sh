@@ -1,13 +1,5 @@
 #!/bin/sh
-# Build Google MCP Toolbox for one variant, for every runtime target.
-#
-#   scripts/build_toolbox.sh <variant>      ->  build/<variant>/bin/<target>/toolbox
-#
-# The binary carries exactly the source and tool types the variant's prebuilt
-# configurations use: they are read from Toolbox's own prebuilt YAML and mapped
-# to the packages that register them, so a variant never ships drivers it cannot
-# offer and never misses one it needs. Pinned source, Go image and build epoch
-# make the result reproducible; scripts/verify_binaries.sh checks it.
+# Rebuild only Spanner for Linux AMD64 and ARM64 from pinned implementation source.
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
@@ -16,10 +8,9 @@ TOOLBOX_TAG=v1.3.0
 TOOLBOX_COMMIT=b0010060a939455d91e4f8ba62dc3e72b1892469
 GO_IMAGE=golang:1.26.2-bookworm@sha256:47ce5636e9936b2c5cbf708925578ef386b4f8872aec74a67bd13a627d242b19
 PATCH=scripts/patches/0001-flowsteward-driver-bound-query-params.patch
-# Written by scripts/render_variant.py: the variant's prebuilts after the
-# connector's runtime aliases (MariaDB runs on Toolbox's MySQL prebuilt).
+# This repository pins only Spanner SQL interfaces.
 test -f "$ROOT/scripts/toolbox-prebuilts.txt" \
-  || { echo "[FAIL] run scripts/render_variant.py $VARIANT first" >&2; exit 2; }
+  || { echo "[FAIL] missing fixed database prebuilt list" >&2; exit 2; }
 PREBUILTS=$(cat "$ROOT/scripts/toolbox-prebuilts.txt")
 mkdir -p "$ROOT"
 

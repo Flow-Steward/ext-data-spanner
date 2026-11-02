@@ -551,7 +551,7 @@ def test_toolbox_dataset_connector_manifest_is_author_friendly() -> None:
     assert "capabilities" not in descriptor
     connector = contract["dataset_connectors"][0]
     assert connector["connector_id"] == "toolbox_database"
-    assert connector["source_provider"] == "Google MCP Toolbox"
+    assert connector["source_provider"] == descriptor["display_name"]
     expected = set(VARIANT["prebuilts"]) if VARIANT else EXPECTED_DATASET_PREBUILTS
     assert DATASET_PREBUILTS == expected
     assert DATASET_PREBUILTS <= EXPECTED_DATASET_PREBUILTS
