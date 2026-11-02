@@ -9,13 +9,12 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 DATABASE = "spanner"
 NAME = "Spanner"
-EXPECTED_FIELDS = ["project", "instance", "database", "dialect"]
+EXPECTED_FIELDS = ["project", "instance", "database"]
 EXPECTED_PREBUILTS = ["spanner", "spanner-postgres"]
 PUBLIC_ENV = [
     "SPANNER_PROJECT",
     "SPANNER_INSTANCE",
     "SPANNER_DATABASE",
-    "SPANNER_DIALECT",
     "GOOGLE_CLOUD_PROJECT",
     "GOOGLE_CLOUD_QUOTA_PROJECT",
     "GOOGLE_CLOUD_UNIVERSE_DOMAIN",
@@ -81,7 +80,8 @@ def test_all_runtime_mapped_settings_are_retained():
         and node.target.id == "TOOLBOX_ENV_FIELDS"
     )
     required = set().union(*(set(mapping[p].values()) for p in EXPECTED_PREBUILTS)) - {"password"}
-    assert set(EXPECTED_FIELDS) == required
+    # SQL dialect is derived from the selected fixed interface, not a free setting.
+    assert set(EXPECTED_FIELDS) == required - {"dialect"}
 
 
 def test_credentials_match_the_database_authentication():
@@ -124,3 +124,124 @@ def test_visible_ui_describes_only_this_database():
     setup = yaml.safe_load((ROOT / "ui/components/overview.yaml").read_text())
     assert NAME in setup["title"]
     assert NAME in setup["body"]
+
+
+@pytest.mark.parametrize("shape", ["resolved", "legacy", "combined"])
+def test_secret_environment_is_forwarded_without_a_provider(shape, monkeypatch):
+    from copy import deepcopy
+    from test_toolbox_dataset_connector import _runtime_module
+
+    module = _runtime_module()
+
+    def no_provider(*args, **kwargs):
+        raise AssertionError("environment resolution must not start a provider")
+
+    monkeypatch.setattr(module.subprocess, "Popen", no_provider)
+    key = SECRET_ENV[0]
+    secret_refs = (
+        {"values": {"env": {key: "nested-fixture"}}}
+        if shape == "resolved"
+        else {"env": {key: "legacy-fixture"}}
+        if shape == "legacy"
+        else {"values": {"env": {key: "nested-fixture"}}, "env": {key: "legacy-fixture"}}
+    )
+    before = deepcopy(secret_refs)
+    config = {"prebuilt": EXPECTED_PREBUILTS[0]}
+    env = module._toolbox_env(config, secret_refs)
+    assert env[key] == ("nested-fixture" if shape == "resolved" else "legacy-fixture")
+    assert secret_refs == before
+
+
+def test_environment_override_order_stays_explicit(monkeypatch):
+    from test_toolbox_dataset_connector import _runtime_module
+
+    module = _runtime_module()
+    config_key = EXPECTED_FIELDS[0]
+    public_key = PUBLIC_ENV[0]
+    secret_key = SECRET_ENV[0]
+    monkeypatch.setenv(public_key, "inherited-fixture")
+    config = {
+        "prebuilt": EXPECTED_PREBUILTS[0],
+        config_key: "typed-fixture",
+        "env": {public_key: "public-fixture"},
+    }
+    env = module._toolbox_env(
+        config, {"values": {"password": "field-fixture", "env": {secret_key: "resolved-fixture"}}}
+    )
+    assert env[public_key] == "public-fixture"
+    assert env[secret_key] == "resolved-fixture"
+
+
+@pytest.mark.parametrize(
+    "profile,dialect,binding,sql",
+    [
+        ("spanner", "googlesql", "named", "SELECT @id AS id"),
+        ("spanner-postgres", "postgresql", "numbered-map", "SELECT $1 AS id"),
+    ],
+)
+def test_spanner_profile_selects_matching_native_dialect_and_binder(
+    profile, dialect, binding, sql, monkeypatch
+):
+    from test_toolbox_dataset_connector import _runtime_module
+
+    module = _runtime_module()
+    monkeypatch.setenv("SPANNER_DIALECT", "different-ambient-dialect")
+    config = {"prebuilt": profile}
+    chosen = module._prebuilt(config)
+    env = module._toolbox_env(config, {})
+    compiled = module._compile_bound_query(chosen, "SELECT :id AS id", {"id": 42})
+    assert env["SPANNER_DIALECT"] == dialect
+    assert compiled["binding"] == binding
+    assert compiled["sql"] == sql
+    assert compiled["params_json"] == '{"id":42}'
+
+
+@pytest.mark.parametrize(
+    "profile,wrong", [("spanner", "postgresql"), ("spanner-postgres", "googlesql")]
+)
+@pytest.mark.parametrize("location", ["field", "public_env", "secret_env"])
+@pytest.mark.parametrize("test_mode", [False, True])
+def test_spanner_mismatch_rejected_before_provider_and_suppression(
+    profile, wrong, location, test_mode, monkeypatch
+):
+    from test_toolbox_dataset_connector import _runtime_module
+    from test_sql_writes import request
+
+    module = _runtime_module()
+
+    def no_provider(*args, **kwargs):
+        raise AssertionError("mismatched profiles must not reach a provider")
+
+    monkeypatch.setattr(module, "_invoke_toolbox", no_provider)
+    payload = request(prebuilt=profile)
+    payload["runtime_context"]["test_mode"] = test_mode
+    connection = payload["action"]["target"]["connection"]
+    if location == "field":
+        connection["config"]["dialect"] = wrong
+    elif location == "public_env":
+        connection["config"]["env"] = {"SPANNER_DIALECT": wrong}
+    else:
+        connection["secrets"] = {"env": {"SPANNER_DIALECT": wrong}}
+    result = module._execute_write(payload)
+    assert not result["ok"]
+    assert result["errors"][0]["code"] == "invalid_payload"
+    assert result["definitely_no_external_effect"]
+
+
+@pytest.mark.parametrize("location", ["field", "env"])
+def test_spanner_dataset_mismatch_rejected_before_provider(location, monkeypatch):
+    from test_toolbox_dataset_connector import _runtime_module
+
+    module = _runtime_module()
+
+    def no_provider(*args, **kwargs):
+        raise AssertionError("mismatched read profiles must not reach a provider")
+
+    monkeypatch.setattr(module, "_invoke_toolbox", no_provider)
+    config = {"prebuilt": "spanner"}
+    if location == "field":
+        config["dialect"] = "postgresql"
+    else:
+        config["env"] = {"SPANNER_DIALECT": "postgresql"}
+    with pytest.raises(ValueError, match="dialect"):
+        module._execute_sql({"action": {"input": {"connection_config": config}}}, preview=True)

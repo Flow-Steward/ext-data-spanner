@@ -94,7 +94,8 @@ runtime:
             - spanner
             - spanner-postgres
             default: spanner
-            description: Spanner SQL interface; this extension cannot select another database.
+            description: Choose Spanner (GoogleSQL) or Spanner (PostgreSQL). The selected interface
+              fixes the SQL dialect and parameter binder.
           project:
             type: string
             title: Google Cloud project
@@ -110,14 +111,6 @@ runtime:
             title: Database
             minLength: 1
             description: Spanner database.
-          dialect:
-            type: string
-            title: GoogleSQL profile dialect
-            description: Dialect for the spanner profile. The spanner-postgres profile always uses PostgreSQL.
-            enum:
-            - googlesql
-            - postgresql
-            default: googlesql
       secret_schema:
         type: object
         title: Spanner credentials
@@ -169,7 +162,8 @@ runtime:
             title: SQL interface
             enum: *id001
             default: spanner
-            description: Spanner SQL interface; this extension cannot select another database.
+            description: Choose Spanner (GoogleSQL) or Spanner (PostgreSQL). The selected interface
+              fixes the SQL dialect and parameter binder.
           project:
             type: string
             title: Google Cloud project
@@ -182,14 +176,6 @@ runtime:
             type: string
             title: Database
             description: Spanner database.
-          dialect:
-            type: string
-            title: GoogleSQL profile dialect
-            description: Dialect for the spanner profile. The spanner-postgres profile always uses PostgreSQL.
-            enum:
-            - googlesql
-            - postgresql
-            default: googlesql
           env:
             type: object
             title: Advanced Spanner environment
@@ -200,8 +186,6 @@ runtime:
               SPANNER_INSTANCE:
                 type: string
               SPANNER_DATABASE:
-                type: string
-              SPANNER_DIALECT:
                 type: string
               GOOGLE_CLOUD_PROJECT:
                 type: string

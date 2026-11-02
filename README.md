@@ -11,11 +11,10 @@ Create a project connection using these settings:
 | `project` | Spanner google cloud project. Required. |
 | `instance` | Spanner spanner instance. Required. |
 | `database` | Spanner database. Required. |
-| `dialect` | Dialect for the spanner profile. The spanner-postgres profile always uses PostgreSQL. Optional. |
 
-Choose **Spanner (GoogleSQL)** (`spanner`) or **Spanner (PostgreSQL)** (`spanner-postgres`). Both are interfaces to the same database product. The first profile defaults to GoogleSQL and accepts its configured dialect; the PostgreSQL profile fixes that dialect natively.
+Choose **Spanner (GoogleSQL)** (`spanner`) or **Spanner (PostgreSQL)** (`spanner-postgres`). Both are interfaces to the same database product. The profile fixes both the native SQL dialect and parameter binder. There is no separate editable dialect setting: choose the PostgreSQL profile for PostgreSQL SQL. Conflicting legacy dialect values are rejected before a provider starts.
 
-The server uses Application Default Credentials inherited by the native subprocess. Grant the service identity access to the selected project, instance and database. There is no connection password or service-account JSON contents field. Dataset advanced environment preserves the named Spanner source variables, Google project/quota/universe and mTLS settings, emulator host, and the server-side `GOOGLE_APPLICATION_CREDENTIALS` path in secret environment. Workflow writes use the server's inherited ADC identity; their connection settings do not accept an arbitrary environment map.
+The server uses Application Default Credentials inherited by the native subprocess. Grant the service identity access to the selected project, instance and database. There is no connection password or service-account JSON contents field. Dataset advanced environment preserves the named Spanner project/instance/database variables, Google project/quota/universe and mTLS settings, emulator host, and the server-side `GOOGLE_APPLICATION_CREDENTIALS` path in secret environment. Resolved dataset secret environment values are forwarded to the native process. Workflow writes use the server's inherited ADC identity; their connection settings do not accept an arbitrary environment map. Ambient SPANNER_DIALECT cannot override the selected interface.
 
 ## Read datasets and write from workflows
 
@@ -25,7 +24,7 @@ Datasets support connection testing, typed schema introspection, saved SQL, visu
 
 The host resolves matching project configuration and secrets, account/project scope, execution context and a durable external-effect claim. Test mode suppresses writes before a driver starts. Writes execute once; uncertain dispatched failures return `retryable: false` and require checking the database before a manual retry. Workflow writes do not make dataset queries writable.
 
-The bounded SQL subset refuses raw dollar characters and backslashes in read SQL; write SQL also refuses raw dollar characters. Put those values in bound parameters. A top-level read LIMIT accepts one integer literal with an optional integer OFFSET. SQL and runtime safety guards are unchanged in 1.3.0.
+The bounded SQL subset refuses raw dollar characters and backslashes in read SQL; write SQL also refuses raw dollar characters. Put those values in bound parameters. A top-level read LIMIT accepts one integer literal with an optional integer OFFSET. The existing SQL safety guards are unchanged; 1.3.0 adds database-specific settings validation and preserves native payloads.
 
 ## Upgrade compatibility
 

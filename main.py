@@ -334,6 +334,13 @@ def _prebuilt(config: dict[str, Any]) -> str:
         raise ValueError(
             f"Google MCP Toolbox source '{prebuilt}' is not a supported dataset connector"
         )
+    if prebuilt in {"spanner", "spanner-postgres"}:
+        expected_dialect = "googlesql" if prebuilt == "spanner" else "postgresql"
+        for selected in (config.get("dialect"), _as_dict(config.get("env")).get("SPANNER_DIALECT")):
+            if selected is not None and str(selected).strip().lower() != expected_dialect:
+                raise ValueError(
+                    "Spanner dialect must match the selected GoogleSQL or PostgreSQL interface"
+                )
     return prebuilt
 
 
@@ -366,8 +373,11 @@ def _toolbox_env(config: dict[str, Any], secret_refs: dict[str, Any]) -> dict[st
     prebuilt = _runtime_prebuilt(config)
     env = dict(os.environ)
     explicit_env = _as_dict(config.get("env"))
-    secret_env = _as_dict(secret_refs.get("env"))
     secrets = _secret_ref_values(secret_refs)
+    secret_env = {
+        **_as_dict(secrets.get("env")),
+        **_as_dict(secret_refs.get("env")),
+    }
     for env_name, config_key in TOOLBOX_ENV_FIELDS.get(prebuilt, {}).items():
         value = explicit_env.get(env_name)
         if value is None:
@@ -382,6 +392,17 @@ def _toolbox_env(config: dict[str, Any], secret_refs: dict[str, Any]) -> dict[st
     for env_name, value in secret_env.items():
         if value is not None and str(value) != "":
             env[str(env_name)] = str(value)
+    # Interface selection also selects the binder; ambient/secret environment
+    # must not silently select a different native SQL dialect.
+    expected_dialect = "googlesql" if prebuilt == "spanner" else "postgresql"
+    for selected in (
+        secrets.get("dialect"),
+        secrets.get("SPANNER_DIALECT"),
+        secret_env.get("SPANNER_DIALECT"),
+    ):
+        if selected is not None and str(selected).strip().lower() != expected_dialect:
+            raise ValueError("Spanner secret dialect must match the selected interface")
+    env["SPANNER_DIALECT"] = expected_dialect
     return env
 
 
@@ -1651,6 +1672,9 @@ def _execute_sql(request: dict[str, Any], *, preview: bool) -> dict[str, Any]:
 def _execute_write(request: dict[str, Any]) -> dict[str, Any]:
     try:
         raw, config, secrets, test_mode = write_input(request, TOOLBOX_DATASET_PREBUILTS)
+        _prebuilt(config)
+        # Validate the profile before binding or test-mode suppression.
+        _toolbox_env(config, secrets)
         sql, occurrences = write_statement(raw.get("sql"), prebuilt=str(config["prebuilt"]))
         params = _validated_params(
             raw.get("param_schema", {}), [name for _, _, name in occurrences], raw.get("params", {})
