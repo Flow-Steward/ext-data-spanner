@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1
+
+- Use official database brand artwork with recorded source attribution.
+
+
 ## 1.3.0
 
 - Bind GoogleSQL and PostgreSQL parameter styles to their fixed Spanner interfaces and reject mismatched dialect overrides.
