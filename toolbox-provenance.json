@@ -92,9 +92,9 @@
         "google.golang.org/grpc": "v1.85.0",
         "google.golang.org/protobuf": "v1.36.12"
       },
-      "go_version": "go1.27.3",
+      "go_version": "go1.27.4",
       "path": "bin/linux-amd64/toolbox",
-      "sha256": "4b4a0e72c7294159063322185ec0ff3aeb8751059fff3b45f14ee954bd99bfa1",
+      "sha256": "b823d480c7b583a1b247e4d040bd0c53d91b1646a91aebdb59108b6e8d97d4be",
       "size": 49016956
     },
     "linux-arm64": {
@@ -189,9 +189,9 @@
         "google.golang.org/grpc": "v1.85.0",
         "google.golang.org/protobuf": "v1.36.12"
       },
-      "go_version": "go1.27.3",
+      "go_version": "go1.27.4",
       "path": "bin/linux-arm64/toolbox",
-      "sha256": "c32bc99b1caff5845d50753228255ea396116a565c926b206375e6099baf06fa",
+      "sha256": "5a28cd0e9aaea5374bf0a759b378cac9df52c43c4b6c7dfb9af5399c09fb7a0c",
       "size": 46268540
     }
   },
@@ -200,6 +200,33 @@
     "scripts/patches/0003-approved-prebuilt-profiles.patch": "df264c60006ad1a01812b427fb6a9593115ddd86227fc9522b8bae6731616aca"
   },
   "go_image": "golang:1.27.3-bookworm@sha256:dc0963f32053e4bc451d24d87e3892d42d01021b61f093e98eb95c0352bb84b0",
+  "go_image_role": "bootstrap",
+  "go_toolchain_install": {
+    "helper_path": "scripts/install-go-toolchain.sh",
+    "helper_sha256": "a12d9761e28980bf808a29e2898dcb9511391c1b70c06014ad49cbadfc8733c6",
+    "selected_sdk": {
+      "host_arch": "arm64",
+      "sha256": "3392582988a273a87ab5043ee1b2c9c17a2c3c00580bf9326c47a2e0aaaeac92",
+      "url": "https://go.dev/dl/go1.27.4.linux-arm64.tar.gz",
+      "version": "go1.27.4"
+    },
+    "sources": {
+      "archives": {
+        "amd64": {
+          "sha256": "7226736c2339719cda28fbf3a54d71aa63bcefe376e98cef00034268dab24840",
+          "size": 70680823,
+          "url": "https://go.dev/dl/go1.27.4.linux-amd64.tar.gz"
+        },
+        "arm64": {
+          "sha256": "3392582988a273a87ab5043ee1b2c9c17a2c3c00580bf9326c47a2e0aaaeac92",
+          "size": 67129258,
+          "url": "https://go.dev/dl/go1.27.4.linux-arm64.tar.gz"
+        }
+      },
+      "bootstrap_image": "golang:1.27.3-bookworm@sha256:dc0963f32053e4bc451d24d87e3892d42d01021b61f093e98eb95c0352bb84b0",
+      "version": "go1.27.4"
+    }
+  },
   "patch_sha256": "b3c627eb605947134461c6a47dee83341c57e94508e4f9199df613937adf9eb8",
   "registered_prebuilts": [
     "spanner",

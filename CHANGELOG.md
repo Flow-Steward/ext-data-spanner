@@ -1,3 +1,8 @@
+## 1.3.4 — 2026-11-10
+
+- Rebuild the same Toolbox source and module graph with checksum-pinned Go 1.27.4.
+- Preserve approved profiles, bound queries and existing native safety controls.
+
 ## 1.3.3 — 2026-11-10
 
 - Upgrade pinned Toolbox to v1.16.0 and Go 1.27.3 with the reviewed dependency graph.

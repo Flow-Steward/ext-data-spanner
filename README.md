@@ -1,6 +1,6 @@
 # Spanner for Flow Steward
 
-Connect **Spanner** datasets and run parameterized workflow writes. This repository contains one installable Spanner extension, version **1.3.3**, with separate Linux AMD64 and ARM64 archives. No other database can be selected or installed from this package.
+Connect **Spanner** datasets and run parameterized workflow writes. This repository contains one installable Spanner extension, version **1.3.4**, with separate Linux AMD64 and ARM64 archives. No other database can be selected or installed from this package.
 
 ## Set up a Spanner connection
 
@@ -47,9 +47,14 @@ python3 scripts/package_extension.py --runtime-target linux-arm64
 
 Manifest isolation checks cover friendly names, database-specific fields, credential separation and the exact shipped SQL profiles. Contract tests cover scope/ref checks, parameter separation, test-mode suppression, output bounds and unknown write outcomes. No live Spanner credentials were supplied; compile and contract evidence does not establish a successful authenticated database connection.
 
-Native payloads are rebuilt with pinned Go 1.27.3 and the reviewed module security baseline. Per-target toolchain, linked modules, size and SHA-256 are recorded in `toolbox-provenance.json`; static packaged checks reject stale native dependencies.
+Native payloads are rebuilt with pinned Go 1.27.4 and the reviewed module security baseline. Per-target toolchain, linked modules, size and SHA-256 are recorded in `toolbox-provenance.json`; static packaged checks reject stale native dependencies.
 
 The native build freezes the previously approved prebuilt YAML from Toolbox v1.3.0
 using `0003-approved-prebuilt-profiles.patch`; the implementation source and recorded
 version remain Toolbox v1.16.0. Unused source, tool, prompt and resource registrations
 are removed. Managed stdio launches use `--disable-version-check`.
+
+The pinned Go 1.27.3 image supplies only the bootstrap operating environment.
+Before any Go command, the build installs the checksum-verified official Go
+1.27.4 SDK recorded in `scripts/go-toolchain-sources.json`; provenance records
+the installer, selected SDK, and actual compiler embedded in each payload.

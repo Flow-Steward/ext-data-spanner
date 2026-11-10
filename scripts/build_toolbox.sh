@@ -6,7 +6,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 VARIANT=spanner
 TOOLBOX_TAG=v1.16.0
 TOOLBOX_COMMIT=06ea49d9a487a72c22419b5a8d5c22c11f0d7485
-GO_IMAGE=golang:1.27.3-bookworm@sha256:dc0963f32053e4bc451d24d87e3892d42d01021b61f093e98eb95c0352bb84b0
+BOOTSTRAP_IMAGE=golang:1.27.3-bookworm@sha256:dc0963f32053e4bc451d24d87e3892d42d01021b61f093e98eb95c0352bb84b0
 DEPENDENCY_PATCH=scripts/patches/0002-go-security-baseline.patch
 PATCH=scripts/patches/0001-flowsteward-driver-bound-query-params.patch
 PROFILE_PATCH=scripts/patches/0003-approved-prebuilt-profiles.patch
@@ -16,13 +16,15 @@ test -f "$ROOT/scripts/toolbox-prebuilts.txt" \
 PREBUILTS=$(cat "$ROOT/scripts/toolbox-prebuilts.txt")
 mkdir -p "$ROOT"
 
-docker run --rm --name "fs-special-$VARIANT-build-20261110" --cpus=2 --memory=4g \
+docker run --rm --name "fs-special-$VARIANT-finalpatch-build-20261110" --cpus=2 --memory=4g \
   -v flow-steward-db-batch-go-cache:/go/pkg/mod -v flow-steward-db-batch-build-cache:/root/.cache/go-build \
   -e TOOLBOX_TAG="$TOOLBOX_TAG" -e TOOLBOX_COMMIT="$TOOLBOX_COMMIT" -e PATCH="$PATCH" \
   -e PROFILE_PATCH="$PROFILE_PATCH" -e DEPENDENCY_PATCH="$DEPENDENCY_PATCH" -e PREBUILTS="$PREBUILTS" -e VARIANT="$VARIANT" \
   -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
-  -v "$ROOT:/out" "$GO_IMAGE" sh -c '
+  -v "$ROOT:/out" "$BOOTSTRAP_IMAGE" sh -c '
     set -eu
+    export GOTOOLCHAIN=local
+    sh /out/scripts/install-go-toolchain.sh /out/scripts/go-toolchain-selected.json
     git clone --quiet --filter=blob:none --branch "$TOOLBOX_TAG" --depth 1 \
       https://github.com/googleapis/mcp-toolbox.git /src
     test "$(git -C /src rev-parse HEAD)" = "$TOOLBOX_COMMIT"
@@ -79,7 +81,7 @@ docker run --rm --name "fs-special-$VARIANT-build-20261110" --cpus=2 --memory=4g
       echo "[PASS] $VARIANT $target: $(stat -c %s "/out/bin/$target/toolbox") bytes"
     done
     sha256sum -c /tmp/go-module-checksums
-    chown -R "$HOST_UID:$HOST_GID" "/out/bin" "/out/packages.txt"
+    chown -R "$HOST_UID:$HOST_GID" "/out/bin" "/out/packages.txt" "/out/scripts/go-toolchain-selected.json"
   '
 
 python3 "$ROOT/scripts/provenance.py"

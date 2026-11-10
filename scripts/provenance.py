@@ -23,6 +23,22 @@ def binary_modules(path):
     return {"go_modules": record["modules"], "go_version": record["go_version"]}
 
 
+def toolchain_install():
+    sources = json.loads((ROOT / "scripts/go-toolchain-sources.json").read_text())
+    selected = json.loads((ROOT / "scripts/go-toolchain-selected.json").read_text())
+    if selected.get("version") != sources.get("version") or selected.get("version") != "go1.27.4":
+        raise ValueError("Selected SDK differs from the reviewed compiler")
+    expected = sources["archives"][selected["host_arch"]]
+    if any(selected.get(key) != expected[key] for key in ("url", "sha256")):
+        raise ValueError("Selected SDK URL/hash differs from the reviewed archive")
+    return {
+        "helper_path": "scripts/install-go-toolchain.sh",
+        "helper_sha256": digest(ROOT / "scripts/install-go-toolchain.sh"),
+        "sources": sources,
+        "selected_sdk": selected,
+    }
+
+
 def main():
     records = {
         target: {
@@ -41,6 +57,8 @@ def main():
             "golang:1.27.3-bookworm@sha256:"
             "dc0963f32053e4bc451d24d87e3892d42d01021b61f093e98eb95c0352bb84b0"
         ),
+        "go_image_role": "bootstrap",
+        "go_toolchain_install": toolchain_install(),
         "registered_prebuilts": (ROOT / "scripts/toolbox-prebuilts.txt").read_text().split(),
         "patch_sha256": digest(
             ROOT / "scripts/patches/0001-flowsteward-driver-bound-query-params.patch"
