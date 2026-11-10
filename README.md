@@ -1,6 +1,6 @@
 # Spanner for Flow Steward
 
-Connect **Spanner** datasets and run parameterized workflow writes. This repository contains one installable Spanner extension, version **1.3.2**, with separate Linux AMD64 and ARM64 archives. No other database can be selected or installed from this package.
+Connect **Spanner** datasets and run parameterized workflow writes. This repository contains one installable Spanner extension, version **1.3.3**, with separate Linux AMD64 and ARM64 archives. No other database can be selected or installed from this package.
 
 ## Set up a Spanner connection
 
@@ -24,7 +24,7 @@ Datasets support connection testing, typed schema introspection, saved SQL, visu
 
 The host resolves matching project configuration and secrets, account/project scope, execution context and a durable external-effect claim. Test mode suppresses writes before a driver starts. Writes execute once; uncertain dispatched failures return `retryable: false` and require checking the database before a manual retry. Workflow writes do not make dataset queries writable.
 
-The bounded SQL subset refuses raw dollar characters and backslashes in read SQL; write SQL also refuses raw dollar characters. Put those values in bound parameters. A top-level read LIMIT accepts one integer literal with an optional integer OFFSET. The existing SQL safety guards are unchanged; 1.3.0 adds database-specific settings validation and preserves native payloads.
+The bounded SQL subset refuses raw dollar characters and backslashes in read SQL; write SQL also refuses raw dollar characters. Put those values in bound parameters. A top-level read LIMIT accepts one integer literal with an optional integer OFFSET. The existing SQL safety guards and database-specific settings validation remain in force.
 
 ## Upgrade compatibility
 
@@ -32,7 +32,7 @@ The visible name is Spanner. The legacy extension ID `flowsteward.data-connector
 
 ## Technical implementation and packaging
 
-Google MCP Toolbox is implementation tooling, pinned to tag `v1.3.0`, commit `b0010060a939455d91e4f8ba62dc3e72b1892469`. Its fixed native build registers only this repository's Spanner interfaces. Installation and runtime download no drivers. Existing native binaries and provenance are unchanged by the 1.3.0 UI/schema correction.
+Google MCP Toolbox is implementation tooling, pinned to tag `v1.16.0`, commit `06ea49d9a487a72c22419b5a8d5c22c11f0d7485`. Its fixed native build registers only this repository's Spanner interfaces. Installation and runtime download no drivers. Native binaries are rebuilt for this release.
 
 To package the existing verified binaries:
 
@@ -47,4 +47,9 @@ python3 scripts/package_extension.py --runtime-target linux-arm64
 
 Manifest isolation checks cover friendly names, database-specific fields, credential separation and the exact shipped SQL profiles. Contract tests cover scope/ref checks, parameter separation, test-mode suppression, output bounds and unknown write outcomes. No live Spanner credentials were supplied; compile and contract evidence does not establish a successful authenticated database connection.
 
-Native payloads are rebuilt with pinned Go 1.26.10 and the reviewed module security baseline. Per-target toolchain, linked modules, size and SHA-256 are recorded in `toolbox-provenance.json`; static packaged checks reject stale native dependencies.
+Native payloads are rebuilt with pinned Go 1.27.3 and the reviewed module security baseline. Per-target toolchain, linked modules, size and SHA-256 are recorded in `toolbox-provenance.json`; static packaged checks reject stale native dependencies.
+
+The native build freezes the previously approved prebuilt YAML from Toolbox v1.3.0
+using `0003-approved-prebuilt-profiles.patch`; the implementation source and recorded
+version remain Toolbox v1.16.0. Unused source, tool, prompt and resource registrations
+are removed. Managed stdio launches use `--disable-version-check`.

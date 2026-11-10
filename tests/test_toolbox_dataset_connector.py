@@ -906,9 +906,9 @@ def test_packaged_toolbox_artifacts_are_pinned_and_bounded() -> None:
     expected = {"linux-amd64": 62, "linux-arm64": 183}
 
     assert provenance["name"] == "MCP Toolbox for Databases"
-    assert provenance["version"] == "1.3.0"
-    assert provenance["tag"] == "v1.3.0"
-    assert provenance["commit"] == "b0010060a939455d91e4f8ba62dc3e72b1892469"
+    assert provenance["version"] == "1.16.0"
+    assert provenance["tag"] == "v1.16.0"
+    assert provenance["commit"] == "06ea49d9a487a72c22419b5a8d5c22c11f0d7485"
     assert provenance["source_url"] == "https://github.com/googleapis/mcp-toolbox"
     assert provenance["build"]["targets"] == sorted(expected)
     if VARIANT:
@@ -958,6 +958,7 @@ def test_packaged_toolbox_registers_every_declared_runtime_source(
             str(EXTENSION_ROOT / "bin" / target / "toolbox"),
             f"--prebuilt={runtime_prebuilt}",
             "--stdio",
+            "--disable-version-check",
         ],
         input=json.dumps(
             {
@@ -2074,3 +2075,24 @@ def test_logo_is_a_square_png_within_the_host_limits() -> None:
     assert width == height
     assert 32 <= width <= 512
     assert len(data) <= 100 * 1024
+
+
+def test_toolbox_stdio_disables_startup_version_network_check(monkeypatch) -> None:
+    module = _load_main_module()
+    captured = []
+    original = module.subprocess.Popen
+
+    def launch(command, **kwargs):
+        captured.append(command)
+        return original(command, **kwargs)
+
+    monkeypatch.setattr(module.subprocess, "Popen", launch)
+    monkeypatch.setattr(module, "_TOOLBOX_COMMAND_OVERRIDE", [sys.executable, str(FAKE_TOOLBOX)])
+    config = {
+        "prebuilt": sorted(OFFERED_PREBUILTS)[0],
+        "host": "localhost", "database": "test", "user": "test",
+    }
+    module._invoke_toolbox(config, {}, "list_tables", timeout_seconds=2)
+    assert captured == [[sys.executable, str(FAKE_TOOLBOX),
+                         f"--prebuilt={module._runtime_prebuilt(config)}",
+                         "--stdio", "--disable-version-check"]]

@@ -23,13 +23,13 @@ def test_shipped_native_security_floors_and_provenance(target):
     provenance = json.loads((ROOT / "toolbox-provenance.json").read_text())
     record = provenance["binaries"][target]
     assert record["go_modules"] == actual["modules"]
-    assert record["go_version"] == actual["go_version"] == "go1.26.10"
+    assert record["go_version"] == actual["go_version"] == "go1.27.3"
     assert record["sha256"] == hashlib.sha256(binary.read_bytes()).hexdigest()
     assert record["size"] == binary.stat().st_size
 
 
-@pytest.mark.parametrize("version", ["go1.26.2", "go1.27.0", "go1.27.1"])
-def test_unreviewed_toolchain_is_rejected_even_on_newer_branch(version):
+@pytest.mark.parametrize("version", ["go1.26.2", "go1.26.10", "go1.27.0", "go1.27.1"])
+def test_unreviewed_toolchain_is_rejected_including_prior_compiler(version):
     with pytest.raises(ValueError, match="reviewed"):
         SECURITY.check_floors(
             {"go_version": version, "modules": {}, "module_gaps": []}, BASELINE

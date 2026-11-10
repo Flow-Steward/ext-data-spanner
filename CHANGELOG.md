@@ -1,3 +1,9 @@
+## 1.3.3 — 2026-11-10
+
+- Upgrade pinned Toolbox to v1.16.0 and Go 1.27.3 with the reviewed dependency graph.
+- Retain approved database profiles, driver parameter binding and native security gates.
+- Disable startup version checks for fixed offline stdio launches.
+
 # Changelog
 
 ## 1.3.2

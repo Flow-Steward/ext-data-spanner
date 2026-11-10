@@ -429,7 +429,7 @@ def _invoke_toolbox(
     timeout_seconds: int = 30,
 ) -> Any:
     prebuilt = _runtime_prebuilt(config)
-    command = [*_toolbox_command(config), f"--prebuilt={prebuilt}", "--stdio"]
+    command = [*_toolbox_command(config), f"--prebuilt={prebuilt}", "--stdio", "--disable-version-check"]
     process = subprocess.Popen(  # nosemgrep: fixed packaged argv, never shell=True. # nosec B603
         command,
         stdin=subprocess.PIPE,
@@ -450,7 +450,7 @@ def _invoke_toolbox(
                 "params": {
                     "protocolVersion": "2025-06-18",
                     "capabilities": {},
-                    "clientInfo": {"name": EXTENSION_ID, "version": "1.3.2"},
+                    "clientInfo": {"name": EXTENSION_ID, "version": "1.3.3"},
                 },
             },
         )
