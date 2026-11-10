@@ -6,7 +6,8 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 VARIANT=spanner
 TOOLBOX_TAG=v1.3.0
 TOOLBOX_COMMIT=b0010060a939455d91e4f8ba62dc3e72b1892469
-GO_IMAGE=golang:1.26.2-bookworm@sha256:47ce5636e9936b2c5cbf708925578ef386b4f8872aec74a67bd13a627d242b19
+GO_IMAGE=golang:1.26.10-bookworm@sha256:5de7c99eb78ca5e515a4c340235d0955ec5964a5071c492c15503d7c267da473
+DEPENDENCY_PATCH=scripts/patches/0002-go-security-baseline.patch
 PATCH=scripts/patches/0001-flowsteward-driver-bound-query-params.patch
 # This repository pins only Spanner SQL interfaces.
 test -f "$ROOT/scripts/toolbox-prebuilts.txt" \
@@ -17,7 +18,7 @@ mkdir -p "$ROOT"
 docker run --rm --cpus=1 --memory=2g \
   -v flow-steward-db-batch-go-cache:/go/pkg/mod -v flow-steward-db-batch-build-cache:/root/.cache/go-build \
   -e TOOLBOX_TAG="$TOOLBOX_TAG" -e TOOLBOX_COMMIT="$TOOLBOX_COMMIT" -e PATCH="$PATCH" \
-  -e PREBUILTS="$PREBUILTS" -e VARIANT="$VARIANT" \
+  -e DEPENDENCY_PATCH="$DEPENDENCY_PATCH" -e PREBUILTS="$PREBUILTS" -e VARIANT="$VARIANT" \
   -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
   -v "$ROOT:/out" "$GO_IMAGE" sh -c '
     set -eu
@@ -26,6 +27,10 @@ docker run --rm --cpus=1 --memory=2g \
     test "$(git -C /src rev-parse HEAD)" = "$TOOLBOX_COMMIT"
     cd /src
     git apply "/out/$PATCH"
+    git apply "/out/$DEPENDENCY_PATCH"
+    # Fail if build or tests mutate the reviewed dependency graph.
+    sha256sum go.mod go.sum > /tmp/go-module-checksums
+    export GOFLAGS=-mod=readonly
 
     # Every resource type the prebuilt configurations name ...
     : > /tmp/types
@@ -57,7 +62,8 @@ docker run --rm --cpus=1 --memory=2g \
     gofmt -w internal/util/flowstewardbinding internal/sources/sqlite internal/sources/singlestore internal/sources/oceanbase internal/sources/clickhouse internal/sources/snowflake internal/sources/spanner
     go test -p 1 ./internal/util/flowstewardbinding
     for package in $(cat /tmp/packages | grep /internal/sources/); do
-      go test -p 1 -run TestFlowStewardBoundWrite "./${package#github.com/googleapis/mcp-toolbox/}"
+      # Spanner has upstream dialect/config controls rather than a BoundWrite-named test.
+      go test -p 1 "./${package#github.com/googleapis/mcp-toolbox/}"
     done
     export SOURCE_DATE_EPOCH=1779400183
     for target in linux-amd64 linux-arm64; do
@@ -69,6 +75,7 @@ docker run --rm --cpus=1 --memory=2g \
       chmod 0755 "/out/bin/$target/toolbox"
       echo "[PASS] $VARIANT $target: $(stat -c %s "/out/bin/$target/toolbox") bytes"
     done
+    sha256sum -c /tmp/go-module-checksums
     chown -R "$HOST_UID:$HOST_GID" "/out/bin" "/out/packages.txt"
   '
 

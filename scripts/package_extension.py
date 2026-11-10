@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import stat
@@ -14,7 +15,7 @@ import zipfile
 from pathlib import Path
 
 EXTENSION_ID = "flowsteward.data-connector-mcp-toolbox-spanner"
-VERSION = "1.3.1"
+VERSION = "1.3.2"
 TOP_FOLDER = "flowsteward_data_connector_mcp_toolbox_spanner"
 SOURCE_DATE_EPOCH = 1779400183
 MAX_ARCHIVE_BYTES = 50 * 1024 * 1024
@@ -77,6 +78,16 @@ def _payload_paths(root: Path, target: str) -> list[Path]:
     return sorted(paths)
 
 
+def _native_security():
+    """Load the fixed sibling inspector when imported or invoked as a script."""
+    spec = importlib.util.spec_from_file_location(
+        "flowsteward_native_security", Path(__file__).with_name("native_security.py")
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _native_metadata(root: Path, target: str) -> dict[str, str]:
     binary = root / "bin" / target / "toolbox"
     if any(path.is_symlink() for path in (root / "bin", binary.parent, binary)):
@@ -102,6 +113,14 @@ def _native_metadata(root: Path, target: str) -> dict[str, str]:
     digest = sha256(binary)
     if record.get("sha256") != digest or record.get("size") != binary.stat().st_size:
         raise ValueError("Native executable SHA-256 or size does not match provenance")
+    security = _native_security()
+    actual = security.inspect_binary(binary)
+    baseline = json.loads(Path(__file__).with_name("native-security-baseline.json").read_text())
+    security.check_floors(actual, baseline)
+    if record.get("go_modules") != actual["modules"]:
+        raise ValueError("Native module inventory does not match provenance")
+    if record.get("go_version") != actual["go_version"]:
+        raise ValueError("Native toolchain does not match provenance")
     return {"path": f"bin/{target}/toolbox", "sha256": digest}
 
 

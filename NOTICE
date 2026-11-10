@@ -13,6 +13,8 @@ artifact. Flow Steward applies the checked-in patch
 scripts/patches/0001-flowsteward-driver-bound-query-params.patch so saved-query
 values reach native RunSQL driver parameters without SQL interpolation. The
 reproducible Docker build verifies the pinned commit, checks and applies the
-patch, runs the affected Go tests, excludes Oracle, and builds both portable
+patch and the module-only security baseline in
+scripts/patches/0002-go-security-baseline.patch, runs the affected Go tests,
+excludes Oracle, and builds both portable
 Linux targets. Build tools and checksums are recorded in THIRD_PARTY.yml and
 SHA256SUMS.

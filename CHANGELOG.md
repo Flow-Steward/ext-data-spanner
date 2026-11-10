@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.2
+
+- Rebuild both native targets with Go 1.26.10 and the reviewed module security baseline.
+- Retain pinned Toolbox source and driver-bound query safety controls.
+- Record actual per-target linked modules and reject stale payloads before release.
+
 ## 1.3.1
 
 - Use official database brand artwork with recorded source attribution.
