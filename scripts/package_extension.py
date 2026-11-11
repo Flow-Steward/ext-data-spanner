@@ -15,7 +15,7 @@ import zipfile
 from pathlib import Path
 
 EXTENSION_ID = "flowsteward.data-connector-mcp-toolbox-spanner"
-VERSION = "1.3.5"
+VERSION = "1.3.6"
 TOP_FOLDER = "flowsteward_data_connector_mcp_toolbox_spanner"
 SOURCE_DATE_EPOCH = 1779400183
 MAX_ARCHIVE_BYTES = 50 * 1024 * 1024
@@ -25,6 +25,7 @@ PAYLOAD_DIRECTORIES = frozenset({"bin", "contracts", "ui", "scripts", "tests", "
 EXCLUDED_DIRECTORIES = frozenset(
     {
         ".git",
+        ".github",
         ".venv",
         "venv",
         ".fs-python",
