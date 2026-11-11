@@ -1,6 +1,14 @@
 # Spanner for Flow Steward
 
-Connect **Spanner** datasets and run parameterized workflow writes. This repository contains one installable Spanner extension, version **1.3.4**, with separate Linux AMD64 and ARM64 archives. No other database can be selected or installed from this package.
+Flow Steward extension `flowsteward.data-connector-mcp-toolbox-spanner`, version **1.3.5**.
+
+Connect Spanner to Flow Steward for saved SQL datasets and workflow data changes. Choose the GoogleSQL or PostgreSQL profile to match the database dialect. Dataset operations test the connection, inspect typed schemas, validate queries against selected tables and columns, preview results, execute saved SQL and infer output schemas. Reads use the read-only path and return at most 100 rows and 480 KiB of inline output.
+
+The separate execute_write action accepts one INSERT, UPDATE or DELETE with named parameters, a values object and an optional parameter schema. Parameters let the same SQL step accept different record identifiers and workflow values. For example, read a set of application records, route each record through a review process, then update the processing state or insert the workflow result. Read-only Dataset access stays separate from workflow mutations.
+
+Configure the Google Cloud project, Spanner instance and database, and grant the server’s Application Default Credentials identity access to that database. The selected profile fixes the dialect and parameter binder; it is not a free-form dialect toggle. Schema changes, transaction scripts and database triggers are unavailable. Combine saved reads with explicit updates to connect application records to approvals, notifications and follow-up processing.
+
+Select the Spanner GoogleSQL or Spanner PostgreSQL profile and configure project, instance and database. Provide server-side Application Default Credentials with appropriate database privileges; workflow connections do not accept a password or inline service-account JSON.
 
 ## Set up a Spanner connection
 
