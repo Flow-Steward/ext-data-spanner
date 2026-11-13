@@ -34,7 +34,7 @@ def test_one_database_identity_and_friendly_names():
     contract = data["runtime"]["extension_contract_v2"]
     assert data["extension_id"] == "flowsteward.data-connector-mcp-toolbox-" + DATABASE
     assert data["display_name"] == NAME
-    assert data["version"] == "1.3.8"
+    assert data["version"] == "1.3.9"
     assert len(contract["connection_types"]) == len(contract["dataset_connectors"]) == 1
     writer = contract["connection_types"][0]
     dataset = contract["dataset_connectors"][0]
