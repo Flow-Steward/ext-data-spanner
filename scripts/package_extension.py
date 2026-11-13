@@ -15,12 +15,18 @@ import zipfile
 from pathlib import Path
 
 EXTENSION_ID = "flowsteward.data-connector-mcp-toolbox-spanner"
-VERSION = "1.3.7"
+VERSION = "1.3.8"
 TOP_FOLDER = "flowsteward_data_connector_mcp_toolbox_spanner"
 SOURCE_DATE_EPOCH = 1779400183
 MAX_ARCHIVE_BYTES = 50 * 1024 * 1024
 MAX_UNCOMPRESSED_BYTES = 150 * 1024 * 1024
 MACHINES = {"linux-amd64": 62, "linux-arm64": 183}
+GENERATED_NATIVE_METADATA = (
+    "toolbox-provenance.json",
+    "SHA256SUMS",
+    "packages.txt",
+    "scripts/go-toolchain-selected.json",
+)
 PAYLOAD_DIRECTORIES = frozenset({"bin", "contracts", "ui", "scripts", "tests", "wheels"})
 EXCLUDED_DIRECTORIES = frozenset(
     {
@@ -150,6 +156,7 @@ def package_extension(root: Path, target: str, out_dir: Path) -> Path:
         "NOTICE",
         "extension.yaml",
         "variant.json",
+        *GENERATED_NATIVE_METADATA,
     ):
         if root / required not in paths:
             raise ValueError(f"Required release file missing: {required}")
