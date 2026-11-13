@@ -1,0 +1,34 @@
+{
+  "forms": [
+    {
+      "operation_id": "execute_write",
+      "title": "SQL: Insert, update or delete rows",
+      "fields": [
+        {
+          "name": "sql",
+          "widget_type": "textarea",
+          "required": true,
+          "label": "SQL write statement",
+          "help_text": "Enter one INSERT, UPDATE or DELETE supported by the selected database. Bind values with :named placeholders, provide Parameters and declare every placeholder type. Use a Dataset saved query for SELECT reads.",
+          "placeholder": "INSERT INTO workflow_results (record_id, status) VALUES (:record_id, :status)"
+        },
+        {
+          "name": "params",
+          "widget_type": "json",
+          "required": false,
+          "label": "Parameters (JSON)",
+          "help_text": "Object containing a value for every :named SQL placeholder. Bind workflow values here rather than inserting them into SQL text. Example: {\"record_id\":1042,\"status\":\"approved\"}.",
+          "placeholder": "{\"record_id\":1042,\"status\":\"approved\"}"
+        },
+        {
+          "name": "param_schema",
+          "widget_type": "json",
+          "required": false,
+          "label": "Parameter types (JSON Schema)",
+          "help_text": "Declare a type for every :named SQL placeholder in properties, matching the Parameters object. Required when SQL uses parameters; omit only for SQL without placeholders. Supported types: string, integer, number, boolean and null.",
+          "placeholder": "{\"type\":\"object\",\"properties\":{\"record_id\":{\"type\":\"integer\"},\"status\":{\"type\":\"string\"}},\"required\":[\"record_id\",\"status\"]}"
+        }
+      ]
+    }
+  ]
+}

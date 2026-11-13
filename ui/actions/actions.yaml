@@ -1,7 +1,11 @@
 actions:
 - action_id: execute_write
-  title: Execute Spanner write
-  description: Run one parameterized INSERT, UPDATE or DELETE on the selected project connection.
+  title: 'SQL: Insert, update or delete rows'
+  description: 'Write workflow results to Spanner using one parameterized INSERT, UPDATE or DELETE. Select
+    a Spanner project connection with write permission. Example: save a processing result with INSERT
+    INTO workflow_results (record_id, status) VALUES (:record_id, :status), then provide Parameters and
+    a type for each named parameter. Use Dataset saved queries for read-only SELECTs. Test mode validates
+    this action without writing; SQL syntax must be supported by the selected database.'
   workflow_visible: true
   required_scopes:
   - extension:invoke
@@ -14,15 +18,25 @@ actions:
   - name: connection_ref
     type: connection_ref
     required: true
+    description: Select an existing project connection for Spanner, configured with the correct profile
+      and credentials in connection secrets. Its database user needs permission to execute your statement.
   - name: sql
     type: string
     required: true
+    description: Enter one INSERT, UPDATE or DELETE supported by the selected database. Bind values with
+      :named placeholders, provide Parameters and declare every placeholder type. Use a Dataset saved
+      query for SELECT reads.
   - name: params
     type: object
     required: false
+    description: 'Object containing a value for every :named SQL placeholder. Bind workflow values here
+      rather than inserting them into SQL text. Example: {"record_id":1042,"status":"approved"}.'
   - name: param_schema
     type: object
     required: false
+    description: 'Declare a type for every :named SQL placeholder in properties, matching the Parameters
+      object. Required when SQL uses parameters; omit only for SQL without placeholders. Supported types:
+      string, integer, number, boolean and null.'
   result_fields:
   - result.status
   - result.rows

@@ -11,6 +11,11 @@
 
 # Changelog
 
+## 1.3.7
+
+- Clarify workflow action names, descriptions and field help; add setup and input examples. Existing action IDs, input schemas and runtime behavior are preserved. Move the unchanged test launcher under tests/ so installer runtime checks accept the package.
+
+
 ## 1.3.2
 
 - Rebuild both native targets with Go 1.26.10 and the reviewed module security baseline.

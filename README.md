@@ -1,6 +1,6 @@
 # Spanner for Flow Steward
 
-Flow Steward extension `flowsteward.data-connector-mcp-toolbox-spanner`, version **1.3.6**.
+Flow Steward extension `flowsteward.data-connector-mcp-toolbox-spanner`, version **1.3.7**.
 
 Connect Spanner to Flow Steward for saved SQL datasets and workflow data changes. Choose the GoogleSQL or PostgreSQL profile to match the database dialect. Dataset operations test the connection, inspect typed schemas, validate queries against selected tables and columns, preview results, execute saved SQL and infer output schemas. Reads use the read-only path and return at most 100 rows and 480 KiB of inline output.
 
@@ -74,19 +74,19 @@ pinned shared GitHub Actions workflow using `.github/release-config.json` to tes
 package both Linux runtime targets, and publish the release assets automatically.
 Manual ZIP uploads are not part of the release process.
 
-After merging the version **1.3.6** update into `main`, create and push its tag:
+After merging the version **1.3.7** update into `main`, create and push its tag:
 
 ```sh
 git switch main
 git pull --ff-only
-git tag -a v1.3.6 -m "Release v1.3.6"
-git push origin v1.3.6
+git tag -a v1.3.7 -m "Release v1.3.7"
+git push origin v1.3.7
 ```
 
 To rerun the workflow for an existing tag without moving it:
 
 ```sh
-gh workflow run release.yml --ref main -f tag=v1.3.6
+gh workflow run release.yml --ref main -f tag=v1.3.7
 ```
 
 The manifest remains the source for release identity and catalog descriptions.
@@ -94,3 +94,7 @@ The shared workflow installs the verified first-party SDK wheel before test
 dependencies. Where native payloads are absent from source, the recipe restores
 only the listed missing files from checksum-pinned published archives; the source
 packager still verifies their provenance before packaging.
+
+## Workflow action setup and examples
+
+See [Workflow actions](docs/workflow-actions.md) for choosing Dataset reads versus explicit writes, connection requirements and copyable field examples.
