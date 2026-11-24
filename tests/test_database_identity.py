@@ -105,7 +105,7 @@ def test_build_metadata_registers_only_this_database():
         EXPECTED_PREBUILTS
     )
     native = json.loads((ROOT / "scripts/native-build-identities.json").read_text())
-    assert native["toolbox_commit"] == "45ed205cc8682ed066c82e0b65bcd0e8fc3becce"
+    assert native["toolbox_commit"] == "24762d91babd43d91afc3daeeece1cb446266c54"
     assert sorted(
         yaml.safe_load((ROOT / "THIRD_PARTY.yml").read_text())["build"]["registered_prebuilts"]
     ) == sorted(EXPECTED_PREBUILTS)
