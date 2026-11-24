@@ -34,7 +34,7 @@ def test_one_database_identity_and_friendly_names():
     contract = data["runtime"]["extension_contract_v2"]
     assert data["extension_id"] == "flowsteward.data-connector-mcp-toolbox-" + DATABASE
     assert data["display_name"] == NAME
-    assert data["version"] == "1.3.12"
+    assert data["version"] == "1.3.13"
     assert len(contract["connection_types"]) == len(contract["dataset_connectors"]) == 1
     writer = contract["connection_types"][0]
     dataset = contract["dataset_connectors"][0]
@@ -105,7 +105,7 @@ def test_build_metadata_registers_only_this_database():
         EXPECTED_PREBUILTS
     )
     native = json.loads((ROOT / "scripts/native-build-identities.json").read_text())
-    assert native["toolbox_commit"] == "45ed205cc8682ed066c82e0b65bcd0e8fc3becce"
+    assert native["toolbox_commit"] == "24762d91babd43d91afc3daeeece1cb446266c54"
     assert sorted(
         yaml.safe_load((ROOT / "THIRD_PARTY.yml").read_text())["build"]["registered_prebuilts"]
     ) == sorted(EXPECTED_PREBUILTS)

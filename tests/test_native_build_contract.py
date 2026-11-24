@@ -59,8 +59,8 @@ def native_fixture(tmp_path, monkeypatch):
 def test_native_metadata_is_regenerated_from_actual_binary_bytes(tmp_path, monkeypatch):
     root = native_fixture(tmp_path, monkeypatch)
     provenance = json.loads((root / "toolbox-provenance.json").read_text())
-    assert provenance["upstream_commit"] == "45ed205cc8682ed066c82e0b65bcd0e8fc3becce"
-    assert provenance["upstream_tag"] == "v1.17.0"
+    assert provenance["upstream_commit"] == "24762d91babd43d91afc3daeeece1cb446266c54"
+    assert provenance["upstream_tag"] == "v1.18.0"
     expected = []
     for target, record in provenance["binaries"].items():
         binary = root / "bin" / target / "toolbox"
@@ -113,8 +113,8 @@ def test_native_ci_cannot_restore_previous_release_binaries():
 
 def test_committed_build_identities_match_reviewed_patches_and_module_floors():
     identity = json.loads((ROOT / "scripts/native-build-identities.json").read_text())
-    assert identity["toolbox_commit"] == "45ed205cc8682ed066c82e0b65bcd0e8fc3becce"
-    assert identity["toolbox_tag"] == "v1.17.0"
+    assert identity["toolbox_commit"] == "24762d91babd43d91afc3daeeece1cb446266c54"
+    assert identity["toolbox_tag"] == "v1.18.0"
     patches = list((ROOT / "scripts/patches").glob("*.patch"))
     security_patch = next(path for path in patches if "security" in path.name)
     profile_patch = next(path for path in patches if "profile" in path.name)

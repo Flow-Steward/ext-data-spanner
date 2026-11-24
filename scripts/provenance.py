@@ -50,8 +50,8 @@ def main():
         for target in TARGETS
     }
     data = {
-        "upstream_commit": "45ed205cc8682ed066c82e0b65bcd0e8fc3becce",
-        "upstream_tag": "v1.17.0",
+        "upstream_commit": "24762d91babd43d91afc3daeeece1cb446266c54",
+        "upstream_tag": "v1.18.0",
         "source": "https://github.com/googleapis/mcp-toolbox",
         "go_image": (
             "golang:1.27.3-bookworm@sha256:"
